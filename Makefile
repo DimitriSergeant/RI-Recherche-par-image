@@ -1,6 +1,6 @@
 CC=gcc
 
-EXEC=testproc read_image
+EXEC=testproc read_image buildHistogram
 NOMSRCS=cgiu.c proc.c rdjpeg.c read_image.c testproc.c
 SRCSFOLDER=sources
 SRCS=$(addprefix $(SRCSFOLDER)/, $(NOMSRCS))
@@ -10,6 +10,10 @@ all:$(EXEC)
 
 read_image:$(SRCSFOLDER)/read_image.c $(SRCSFOLDER)/rdjpeg.c
 	$(CC) -o $@ $^ $(CFLAGS)
+
+buildHistogram:$(SRCSFOLDER)/buildHistogram.c $(SRCSFOLDER)/rdjpeg.c
+	$(CC) -o $@ $^ $(CFLAGS)
+
 
 testproc:$(SRCSFOLDER)/proc.c $(SRCSFOLDER)/testproc.c $(SRCSFOLDER)/cgiu.c
 	$(CC) -o $@ $^ $(CFLAGS)
