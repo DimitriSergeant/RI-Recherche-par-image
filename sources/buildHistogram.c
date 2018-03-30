@@ -1,9 +1,11 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+
 
 #include "rdjpeg.h"
 
@@ -81,21 +83,10 @@ char** createList(FILE* listfile,  int* length){
       currentFileName[strlen(currentFileName) - 1] = '\0';
     }
     list[index] = malloc((lineLength + 1) * sizeof(char));
-    list[index] = currentFileName ;
-    // if(index < 10){
-    //   printf("list[%i] = %s\n", index, list[index]);
-    // }
+    list[index] = strdup(currentFileName) ;
     index++;
     
   }
-
-  // TODO DEBUG : here every entry of 'list' is the same while it wasn't in loop above
-
-  // printf("\n");
-  // for (int i = 0; i < 10; i++){
-  //   printf("list[%i] = %s\n", i, list[i]);
-  // }
-  // printf("\n");
 
   *length = index ;
   return list;
@@ -108,10 +99,15 @@ char** createList(FILE* listfile,  int* length){
  * @param      length  The length of the file list
  */
 void downloadFiles(char** list, int* length){
-  // TODO : find a way to execute every execlp one after one 
+  char *command;
+
   for (int i = 0; i < *length; i++){
-    printf("%i) wget %s -P ressources/\n", i, list[i]);
-    // execlp("wget", "wget", list[i], "-P", "ressources/", NULL);
+    asprintf(&command,"wget \"%s\" -P ressources/",list[i]);
+    if ((popen(command,"r")) == NULL) {
+      printf("Can't download file %s",list[i]);
+      exit(1);
+    }
+    free(command);
   }
 }
 
@@ -131,7 +127,7 @@ void print(FILE* resultfile, float* hist){
 int main(int argc, char *argv[]){
 
   if(argc < 3){
-    printf("%s <list file> <result file>\n", argv[0]);
+    printf("%s <list file> <result file> [-d]\n", argv[0]);
   }
   else{
 
@@ -149,10 +145,11 @@ int main(int argc, char *argv[]){
     }
 
     char** list = createList(listfile, &length);
-    for (int i = length - 10; i < length; i++){
-      printf("list[%i] = %s\n", i, list[i]);
+
+    if(strcmp(argv[3], "-d")){
+      downloadFiles(list, &length);  
     }
-    downloadFiles(list, &length);
+    
 
     // Open resulting file
     resultfile = fopen(argv[2],"w");
