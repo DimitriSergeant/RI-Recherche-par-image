@@ -15,21 +15,25 @@
 
 
 /**
- * Builds the histogram of the given image
- */
-/**
- * @brief      Builds an histogram.
+ * @brief      Builds the histogram of the given image
  *
  * @param      name       The name of the image file
- * @param      histogram  The built histogram
+ * @return     The built histogram
  */
-void buildHistogram(char* name, float* histogram){
+float* buildHistogram(char* name){
 
   int r, g, b, currentHistogramIndex;
   CIMAGE cim ; 
 
   // Open image 
   read_cimage(name,&cim);
+
+  float* histogram = calloc(NR * NG * NB, sizeof(float));
+  // for (int i = 0; i < NR * NG * NB; i++){
+  //   histogram[i] = (float*) malloc(sizeof(float));
+  // }
+
+  printf("Building histogram for %s\n", name);
 
   // Build histogram
   for (int i = 0; i < cim.nx; i++) {
@@ -42,8 +46,16 @@ void buildHistogram(char* name, float* histogram){
     }
   }
 
+  // Normalizing histogram
+  for (int i = 0; i < NR * NG * NB; i++) {
+    histogram[i] /= cim.nx * cim.ny ;
+    printf("%f\n", histogram[i]);
+  }
+
   // Free image
   free_cimage(name,&cim);
+
+  return(histogram);
 }
 
 /**
@@ -117,25 +129,42 @@ void downloadFiles(char** list, int* length){
  * @param      resultfile  The file in which printing 
  * @param      hist        The histogram to print
  */
-void print(FILE* resultfile, float* hist){
-  fprintf(resultfile, "\n");
-  for (int i = 0; i < NR * NG * NB; i++) {
-    fprintf(resultfile, "%f\n", hist[i]);
+void printHist(char* filename, float* hist){
+  char* prefix = "bin/" ;
+  char* prefixedfilename = malloc(strlen(filename) + strlen(prefix) + 1);
+  strcpy(prefixedfilename, prefix);
+  strcat(prefixedfilename, &filename[33]); //delete url prefix of file
+
+  // Open resulting file
+  FILE* resultfile = fopen(prefixedfilename,"w");
+  if (resultfile == NULL){
+    printf("Couldn't open %s for writing\n", prefixedfilename);
+    exit(EXIT_FAILURE);
   }
+
+  printf("Printing in %s\n", prefixedfilename);
+  // fprintf(resultfile, "\n");
+  // for (int i = 0; i < NR * NG * NB; i++) {
+  //   fprintf(resultfile, "%f\n", hist[i]);
+  // }
+
+  // Write histogram (NR * NG * NB elements of size sizeof(float)) in resultfile
+  fwrite(hist, sizeof(float), NR * NG * NB, resultfile);
+
+  fclose(resultfile);
 }
 
 int main(int argc, char *argv[]){
 
-  if(argc < 3){
+  if(argc < 2){
     printf("%s <list file> <result file> [-d]\n", argv[0]);
   }
   else{
 
     FILE* listfile ; 
-    FILE* resultfile ;
     // char** list ;
     int length ;
-    float* hist = NULL;
+    float* hist;
 
     // Load list file
     listfile = fopen(argv[1],"r");
@@ -146,32 +175,38 @@ int main(int argc, char *argv[]){
 
     char** list = createList(listfile, &length);
 
-    if(strcmp(argv[3], "-d")){
+    if(argc >= 3 && strcmp(argv[2], "-d") == 0){
+      printf("Downloading...\n");
       downloadFiles(list, &length);  
     }
-    
 
-    // Open resulting file
-    resultfile = fopen(argv[2],"w");
-    if (resultfile == NULL){
-      printf("Couldn't open resultfile for writing\n");
-      exit(EXIT_FAILURE);
-    }
     
+    // // For every image of list 
+    // for (int i = 0; i < length; i++){
+    //   // Build histogram
+    //   hist = buildHistogram(list[i]);
+    //   // Print histogram   
+    //   printHist(list[i], hist);
+    //   printf("\n");
+    // }
+
+    // !!! FIXME this part is test, uncomment code above for real execution !!!
     // For every image of list 
-    for (int i = 0; i < length; i++){
+    for (int i = 0; i < 10; i++){
       // Build histogram
-      buildHistogram(list[i], hist);
+      hist = buildHistogram(list[i]);
       // Print histogram   
-      print(resultfile, hist);
+      printHist(list[i], hist);
+      printf("\n");
     }
+    // !!! FIXME !!!
+
 
     for (int i = 0; i < length; i++){
       free(list[i]);
     }
     free(list);
     fclose(listfile);
-    fclose(resultfile);
     exit(EXIT_SUCCESS);
   }
 }
