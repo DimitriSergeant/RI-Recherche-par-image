@@ -56,4 +56,15 @@ float* readHist (char* filename);
  */
 float distance(float * hist1, float * hist2);
 
+/**
+ * @brief      Creates an html file with the 'size' images with minimal distance to 'source' image
+ *
+ * @param      source     The image to compare images with
+ * @param      urlList    The images' url list
+ * @param      distances  The distances KEY array
+ * @param[in]  size       The number of images to be written
+ * @param      htmlFile   The html output file
+ */
+void writeHTML(char* source, char** urlList, KEY* distances, int size, FILE* htmlFile);
+
 #endif

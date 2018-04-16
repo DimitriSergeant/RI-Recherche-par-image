@@ -59,13 +59,11 @@ float* buildHistogram(char* name){
 
   // Open image 
   read_cimage(name,&cim);
-
   float* histogram = calloc(NR * NG * NB, sizeof(float));
   // for (int i = 0; i < NR * NG * NB; i++){
   //   histogram[i] = (float*) malloc(sizeof(float));
   // }
 
-  printf("Building histogram for %s\n", name);
 
   // Build histogram
   for (int i = 0; i < cim.nx; i++) {
@@ -81,7 +79,6 @@ float* buildHistogram(char* name){
   // Normalizing histogram
   for (int i = 0; i < NR * NG * NB; i++) {
     histogram[i] /= cim.nx * cim.ny ;
-    printf("%f\n", histogram[i]);
   }
 
   // Free image
@@ -100,7 +97,12 @@ void writeHist(char* filename, float* hist){
   char* prefix = "bin/" ;
   char* prefixedfilename = malloc(strlen(filename) + strlen(prefix) + 1);
   strcpy(prefixedfilename, prefix);
-  strcat(prefixedfilename, &filename[33]); //delete url prefix of file
+  if(strncmp("http://", filename, strlen("http://")) == 0){
+    strcat(prefixedfilename, &filename[33]); //delete url prefix of file
+  }
+  else{
+    strcat(prefixedfilename, &filename[11]); //delete url prefix of file
+  }
 
   // Open resulting file
   FILE* resultfile = fopen(prefixedfilename,"w");
@@ -109,7 +111,6 @@ void writeHist(char* filename, float* hist){
     exit(EXIT_FAILURE);
   }
 
-  printf("Printing in %s\n", prefixedfilename);
   // fprintf(resultfile, "\n");
   // for (int i = 0; i < NR * NG * NB; i++) {
   //   fprintf(resultfile, "%f\n", hist[i]);
@@ -133,12 +134,22 @@ float* readHist(char* filename){
   char* prefix = "bin/" ;
   char* prefixedfilename = malloc(strlen(filename) + strlen(prefix) + 1);
   strcpy(prefixedfilename, prefix);
-  strcat(prefixedfilename, &filename[33]); //delete url prefix of file
+  if(strncmp("http://", filename, strlen("http://")) == 0){
+    strcat(prefixedfilename, &filename[33]); //delete url prefix of file
+  }
+  else{
+    strcat(prefixedfilename, &filename[11]); //delete url prefix of file
+  }
 
   FILE* file = fopen(prefixedfilename, "r");
+  if (file == NULL){
+    printf("Couldn't open %s for reading\n", prefixedfilename);
+    exit(EXIT_FAILURE);
+  }
   float* histogram = malloc(NR * NG * NB * sizeof(float));
-
   fread(histogram, sizeof(float), NR * NG * NB, file);
+
+  fclose(file);
 
   return(histogram);
 }
@@ -161,4 +172,28 @@ float distance(float * hist1, float * hist2){
     sum += (hist1[i] - hist2[i]) * (hist1[i] - hist2[i]);
   }
   return sum ;
+}
+
+/**
+ * @brief      Creates an html file with the 'size' images with minimal distance to 'source' image
+ *
+ * @param      source     The image to compare images with
+ * @param      urlList    The images' url list
+ * @param      distances  The distances KEY array
+ * @param[in]  size       The number of images to be written
+ * @param      htmlFile   The html output file
+ */
+void writeHTML(char* source, char** urlList, KEY* distances, int size, FILE* htmlFile){
+
+  fprintf(htmlFile, "<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"utf-8\">\n\t\t<title>Distances</title>\n\t</head>\n\t<body>\n");
+
+
+  fprintf(htmlFile, "\t\t<img height='380' src='%s' />\n", source);
+
+  for (int i = 0; i < size; i++){
+    fprintf(htmlFile, "\t\t<img height='380' src='%s' />\n", urlList[distances[i].k]);    
+  }
+
+  fprintf(htmlFile, "\t</body>\n</html>");
+
 }

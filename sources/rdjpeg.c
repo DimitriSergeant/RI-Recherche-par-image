@@ -2,6 +2,8 @@
 
 void read_cimage(char *name, CIMAGE *cim)
 {
+
+  printf("%s\n", name);
   /*-----------------------------*/
   /* lecture d'une image couleur */
   /*-----------------------------*/
@@ -18,6 +20,8 @@ void read_cimage(char *name, CIMAGE *cim)
   } else {
     asprintf(&command,"/usr/bin/djpeg \"%s\"",name);
   }
+
+
   /*-----------------------------------*/
   /* lecture d'une image au format PPM */
   /*-----------------------------------*/

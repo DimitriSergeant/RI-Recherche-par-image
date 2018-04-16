@@ -57,25 +57,24 @@ int main(int argc, char *argv[]){
       downloadFiles(list, &length);  
     }
 
-    
-    // // For every image of list 
-    // for (int i = 0; i < length; i++){
-    //   // Build histogram
-    //   hist = buildHistogram(list[i]);
-    //   // Print histogram   
-    //   printHist(list[i], hist);
-    //   printf("\n");
-    // }
 
-    // !!! FIXME this part is test, uncomment code above for real execution !!!
+    
     // For every image of list 
-    for (int i = 0; i < 1; i++){
+    for (int i = 0; i < length; i++){
       // Build histogram
       hist = buildHistogram(list[i]);
       // Print histogram   
       writeHist(list[i], hist);
-      printf("\n");
     }
+
+    // !!! FIXME this part is test, uncomment code above for real execution !!!
+    // For every image of list 
+    // for (int i = 0; i < 10; i++){
+    //   // Build histogram
+    //   hist = buildHistogram(list[i]);
+    //   // Print histogram   
+    //   writeHist(list[i], hist);
+    // }
     // !!! FIXME !!!
 
 
